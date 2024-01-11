@@ -1,3 +1,5 @@
+import collections
+
 from .player import Player
 from .visualizer import make_img_of_board, save_hist_video
 import numpy as np
@@ -8,33 +10,25 @@ class Game:
     The Game. This class is the only needed class for normal use
     """
 
-    def __init__(self, ghost_players=[]):
+    def __init__(self, ghost_players=None):
         """
         Maked a game with 4 players
 
         :param ghost_players: Players there are not in the game
         :type ghost_players: list of int
         """
-        self.players = [Player(), Player(), Player(), Player()]
-        self.hist = []
-        self.round = 1
-        self.current_player = 0
-        self.first_winner_was = -1
-        self.current_dice = -1
-        self.observation_pending = False
-        self.current_move_pieces = []
-        self.current_enemys = []
-        self.current_start_attempts = 0
+        if ghost_players is None:
+            ghost_players = []
+        self.reset()
         self.enemys_order = {
             0: [1, 2, 3],
             1: [2, 3, 0],
             2: [3, 0, 1],
             3: [0, 1, 2]
         }
-        self.game_winners = []
         self.ghost_players = ghost_players
 
-    def __dice_generator(self):
+    def _dice_generator(self):
         """
         Will update self.current_dice with a new random number on the dice
 
@@ -66,13 +60,26 @@ class Game:
             enemy_pieces = [self.players[e].get_pieces() for e in self.enemys_order[seen_from]]
         return pieces, enemy_pieces
 
-    def __add_to_hist(self):
+    def _make_moment(self):
+        pieces, _ = self.get_pieces()
+        moment = [pieces, self.current_dice, self.current_player, self.round]
+        return moment
+
+    def _add_to_hist(self):
         """
         Adds the state of the game to the history
 
         """
-        pieces, _ = self.get_pieces()
-        self.hist.append([pieces, self.current_dice, self.current_player, self.round])
+        pieces, current_dice, current_player, round = self._make_moment()
+        self.hist["pieces"].append(pieces)
+        self.hist["current_dice"].append(current_dice)
+        self.hist["current_player"].append(current_player)
+        self.hist["round"].append(round)
+
+    def _get_from_hist_moment(self, i: int):
+        moment = [self.hist["pieces"][i], self.hist["current_dice"][i],
+                  self.hist["current_player"][i], self.hist["round"][i]]
+        return moment
 
     def reset(self):
         """
@@ -80,7 +87,7 @@ class Game:
 
         """
         self.players = [Player(), Player(), Player(), Player()]
-        self.hist = []
+        self.hist = collections.defaultdict(list)
         self.round = 1
         self.current_player = 0
         self.first_winner_was = -1
@@ -91,10 +98,10 @@ class Game:
         self.current_start_attempts = 0
         self.game_winners = []
 
-    def __gen_observation(self, player_idx, roll_dice = True):
+    def _gen_observation(self, player_idx, roll_dice=True):
         if roll_dice:
             # Roll the dice
-            self.__dice_generator()
+            self._dice_generator()
         dice = self.current_dice
 
         player = self.players[player_idx]
@@ -110,9 +117,10 @@ class Game:
         # Check if there is a winner
         there_is_a_winner = any([p.player_winner() for p in self.players])
 
-        return dice, np.copy(move_pieces), np.copy(player_pieces), np.copy(enemy_pieces), player_is_a_winner, there_is_a_winner
+        return dice, np.copy(move_pieces), np.copy(player_pieces), np.copy(
+            enemy_pieces), player_is_a_winner, there_is_a_winner
 
-    def __set_enemy_pieces(self, player_idx, enemy_pieces):
+    def _set_enemy_pieces(self, player_idx, enemy_pieces):
         """
         Will set the enemy pieces to the pieces given in enemy_pieces
 
@@ -144,13 +152,13 @@ class Game:
         # Set pending observation to true
         self.observation_pending = True
         # Get the current environment
-        obs = self.__gen_observation(self.current_player, roll_dice=True)
+        obs = self._gen_observation(self.current_player, roll_dice=True)
 
         # Add the bord and dice before the move to the history
-        self.__add_to_hist()
+        self._add_to_hist()
         return obs, self.current_player
 
-    def __count_player(self):
+    def _count_player(self):
         """
         Updates the current player and the round if the current player was the last player
 
@@ -187,10 +195,10 @@ class Game:
         elif len(self.current_move_pieces):
             new_enemys = self.players[self.current_player].move_piece(piece_to_move,
                                                                       self.current_dice, self.current_enemys)
-            self.__set_enemy_pieces(self.current_player, new_enemys)
+            self._set_enemy_pieces(self.current_player, new_enemys)
         # If there was no pieces that could be moved then nothing can be done
         else:
-            pass # This line is present for readability
+            pass  # This line is present for readability
 
         # Check if the player now is the winner
         player_is_a_winner = self.players[self.current_player].player_winner()
@@ -203,7 +211,7 @@ class Game:
                 self.game_winners.append(self.current_player)
 
         # Add the bord after the move to the history
-        self.__add_to_hist()
+        self._add_to_hist()
 
         next_player = True
         # In the first round the players has 3 attempts to get a piece out of home
@@ -222,11 +230,11 @@ class Game:
         self.observation_pending = False
 
         # Get the environment after the move
-        after_obs = self.__gen_observation(self.current_player, roll_dice=False)
+        after_obs = self._gen_observation(self.current_player, roll_dice=False)
 
         # If it is the next players turn then change current_player
         if next_player:
-            self.__count_player()
+            self._count_player()
 
         return after_obs
 
@@ -263,24 +271,23 @@ class Game:
         a video of the game. The history will have been extended when a observation was given and when an
         answer to a observation was given.
 
-        :return hist: list of [pieces, current_dice, first_winner_was, current_player, round]
+        :return hist: a dict with lists for [pieces, current_dice, first_winner_was, current_player, round]
         :rtype hist: [list with 4 lists with 4 int's, int, bool, int, int]
         """
         return self.hist
 
     def get_piece_hist(self, mode=0):
         """
-        Will return the how the pieces were recorded during the game.
+        Will return how the pieces were recorded during the game.
 
         :param mode: 0: All recorded pieces are returned. 1: Only if a change is done there will be a new set of pieces. 2: Only unique set of pieces (order is preserved)
         :type mode: int
         :return piece_hist: List of sets of pieces [player 1, player 2, player 3, player 4]
         :rtype piece_hist: list of 4 lists with 4 int's
         """
-        piece_hist = [self.hist[0][0]]
-        for h in self.hist[1:]:
-            pieces = h[0]
-
+        all_piece_hists = self.hist["piece"]
+        piece_hist = [all_piece_hists[0]]
+        for pieces in all_piece_hists[1:]:
             add_to_hist = False
             if mode == 0:
                 add_to_hist = True
@@ -302,7 +309,12 @@ class Game:
         :return board_img: A image of the board
         :rtype board_img: ndarray, RGB colorspace
         """
-        board_img = make_img_of_board(*self.hist[-1])
+        if len(self.hist):
+            moment = self._get_from_hist_moment(-1)
+        else:
+            moment = self._make_moment()
+
+        board_img = make_img_of_board(*moment)
         return board_img
 
     def save_hist(self, file_name):
@@ -314,8 +326,8 @@ class Game:
 
         """
         file_ext = file_name.split(".")[-1]
-        assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-        np.save(file_name, self.hist)
+        assert file_ext == "npz", "The file extension has to be npy (numpy file)"
+        np.savez(file_name, **self.hist)
 
     def save_hist_video(self, video_out, fps=8, frame_size=None, fourcc=None):
         """
@@ -327,9 +339,9 @@ class Game:
         :type fps: float
         :param frame_size: The frame size to save in (width, height). If None is given the full board size is used
         :type frame_size: tuple
-        :param fourcc: FourCC code to be used. If None is given the FourCC code will be tried to create fro the file extension (works on .mp4 and .avi)
+        :param fourcc: FourCC code to be used. If None is given the FourCC code will be tried to create from the file extension (works on .mp4 and .avi)
         :type fourcc: str
 
         """
-        save_hist_video(video_out, self.hist, fps=fps, frame_size=frame_size, fourcc=fourcc)
-
+        moment_hist = [self._get_from_hist_moment(i) for i in range(len(self.hist[list(self.hist.keys())[0]]))]
+        save_hist_video(video_out, moment_hist, fps=fps, frame_size=frame_size, fourcc=fourcc)
