@@ -1,5 +1,5 @@
 from .player import Player
-from .visualizer import make_img_of_board, save_hist_video
+from .visualizer_3dice import make_img_of_board, save_hist_video
 import numpy as np
 
 
