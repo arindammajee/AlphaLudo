@@ -124,13 +124,15 @@ class Player:
     A class used by the Game class. This class is not needed for normal use
     """
 
-    def __init__(self):
+    def __init__(self, strategic=False, out_of_home=True):
         """
         Makes a player with 4 pieces all at the home locations
         """
         self.pieces = []
         self.number_of_pieces = 4
         self.set_all_pieces_to_home()
+        self.out_of_home = out_of_home
+        self.strategic = strategic
 
     def get_pieces_that_can_move(self, dice):
         """
@@ -148,14 +150,22 @@ class Player:
             # If the piece is a goal then the piece can't move
             if BORD_TILES[piece_place] == TAILE_GOAL:
                 continue
-
+            
             # If the piece is at home and the dice is DICE_MOVE_OUT_OF_HOME then the dice can move out of the home place
-            elif BORD_TILES[piece_place] == TAILE_HOME and dice == DICE_MOVE_OUT_OF_HOME:
+            elif BORD_TILES[piece_place] == TAILE_HOME and dice == DICE_MOVE_OUT_OF_HOME and self.out_of_home==False:
+                movable_pieces.append(piece_i)
+            # If the piece is at home and out_of_home is TRUE
+            elif BORD_TILES[piece_place] == TAILE_HOME and self.out_of_home==True:
                 movable_pieces.append(piece_i)
             # If the piece is not at home or at the goal it can move
             elif BORD_TILES[piece_place] != TAILE_HOME:
                 movable_pieces.append(piece_i)
+            # If the strategic player is more than index 27 remove it.
+            elif self.strategic==True and piece_place+dice>27:
+                movable_pieces.remove(piece_i)
+
         return movable_pieces
+
 
     def player_winner(self):
         """
