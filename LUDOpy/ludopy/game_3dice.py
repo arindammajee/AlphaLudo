@@ -8,14 +8,17 @@ class Game:
     The Game. This class is the only needed class for normal use
     """
 
-    def __init__(self, ghost_players=[]):
+    def __init__(self, ghost_players=[], strategic_player=-1):
         """
         Maked a game with 4 players
 
         :param ghost_players: Players there are not in the game
         :type ghost_players: list of int
         """
-        self.players = [Player(), Player(), Player(), Player()]
+        if strategic_player==-1:
+            self.players = [Player(), Player(), Player(), Player()]
+        else:
+            self.players = [Player(strategic=True), Player(), Player(), Player()]
         self.hist = []
         self.round = 1
         self.current_player = 0
