@@ -46,7 +46,7 @@ class Game:
         """
         Will update self.current_dice with a new number on the dice from self.dice_list
         """
-        print(f"Round {self.round}, Current Player {self.current_player}")
+        #print(f"Round {self.round}, Current Player {self.current_player}")
         self.current_dice = max(self.dice_list)
         self.dice_list.remove(self.current_dice)
         self.past_dice_list.append(self.current_dice)
