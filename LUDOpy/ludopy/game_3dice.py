@@ -34,6 +34,7 @@ class Game:
             3: [0, 1, 2]
         }
         self.game_winners = []
+        self.points_list = []
         self.ghost_players = ghost_players
 
     def __dice_generator(self):
@@ -102,6 +103,7 @@ class Game:
         self.current_enemys = []
         self.current_start_attempts = 0
         self.game_winners = []
+        self.points_list = []
 
     def __gen_observation(self, player_idx, roll_dice = True, choose_dice=True):
         if roll_dice:
@@ -187,7 +189,7 @@ class Game:
             # Check if self.dic_list is empty or not
             if len(self.dice_list)==0:
                 self.round += 1
-                points_list = self.points_given()
+                self.points_list = self.points_given()
 
     def answer_observation(self, piece_to_move):
         """
