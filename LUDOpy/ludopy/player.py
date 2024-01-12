@@ -248,6 +248,14 @@ class Player:
                 do_not_check_rule_a = True
                 move_enemy_home_from_poss.append(START_INDEX)
 
+            elif self.out_of_home and dice != DICE_MOVE_OUT_OF_HOME:
+                self.pieces[piece] = START_INDEX
+
+                # Set the enemy there might be at START_INDEX to moved
+                do_not_check_rule_a = True
+                move_enemy_home_from_poss.append(START_INDEX)
+
+
         # Star before the home areal
         elif new_piece_pos == STAR_AT_GOAL_AREAL_INDX:
             self.pieces[piece] = GOAL_INDEX
