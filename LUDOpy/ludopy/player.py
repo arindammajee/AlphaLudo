@@ -160,8 +160,9 @@ class Player:
             # If the piece is not at home or at the goal it can move
             elif BORD_TILES[piece_place] != TAILE_HOME:
                 movable_pieces.append(piece_i)
+            
             # If the strategic player is more than index 27 remove it.
-            elif self.strategic==True and piece_place+dice>27:
+            if self.strategic==True and piece_place+dice>27:
                 movable_pieces.remove(piece_i)
 
         return movable_pieces
@@ -264,7 +265,7 @@ class Player:
             move_enemy_home_from_poss.append(new_piece_pos)
 
         # The other stars
-        elif BORD_TILES[new_piece_pos] == TAILE_STAR:
+        elif BORD_TILES[new_piece_pos] == TAILE_STAR and self.strategic==False:
             present_star_staridx = STAR_INDEXS.index(new_piece_pos)
             next_star_staridx = present_star_staridx + 1
             if next_star_staridx >= len(STAR_INDEXS):
@@ -280,6 +281,25 @@ class Player:
             next_star_enemy_at_pos, next_star_enemy_pieces_at_pos = get_enemy_at_pos(next_star_pos, enemys)
             if next_star_enemy_at_pos != NO_ENEMY:
                 move_enemy_home_from_poss.append(next_star_pos)
+
+        # If Strategic player 
+        elif BORD_TILES[new_piece_pos] == TAILE_STAR and self.strategic==True and new_piece_pos!=25:
+            present_star_staridx = STAR_INDEXS.index(new_piece_pos)
+            next_star_staridx = present_star_staridx + 1
+            if next_star_staridx >= len(STAR_INDEXS):
+                next_star_staridx = 0
+            next_star_pos = STAR_INDEXS[next_star_staridx]
+
+            self.pieces[piece] = next_star_pos
+
+            # Set the enemy there might be at first star or the start there will be jump to to be moved
+            if enemy_at_pos != NO_ENEMY:
+                move_enemy_home_from_poss.append(new_piece_pos)
+
+            next_star_enemy_at_pos, next_star_enemy_pieces_at_pos = get_enemy_at_pos(next_star_pos, enemys)
+            if next_star_enemy_at_pos != NO_ENEMY:
+                move_enemy_home_from_poss.append(next_star_pos)
+        
 
         # Globs there are not own by enemy
         elif BORD_TILES[new_piece_pos] == TAILE_GLOB:
@@ -338,6 +358,7 @@ class Player:
                         self.pieces[piece] = HOME_INDEX
 
         return enemys_new
+
 
     def set_all_pieces_to_home(self):
         """
