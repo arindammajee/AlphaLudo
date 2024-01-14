@@ -162,7 +162,7 @@ class Player:
                 movable_pieces.append(piece_i)
             
             # If the strategic player is more than index 27 remove it.
-            if self.strategic==True and piece_place+dice>27:
+            if self.strategic==True and piece_place+dice>26:
                 movable_pieces.remove(piece_i)
 
         return movable_pieces
