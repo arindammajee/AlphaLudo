@@ -161,6 +161,7 @@ class Player:
             # If the piece is not at home or at the goal it can move
             elif BORD_TILES[piece_place] != TAILE_HOME:
                 movable_pieces.append(piece_i)
+    
         return movable_pieces
 
     def player_winner(self):
@@ -235,12 +236,11 @@ class Player:
 
         # The Home areal
         elif BORD_TILES[old_piece_pos] == TAILE_HOME:
-            if dice == DICE_MOVE_OUT_OF_HOME:
-                self.pieces[piece] = START_INDEX
+            self.pieces[piece] = START_INDEX
 
-                # Set the enemy there might be at START_INDEX to moved
-                do_not_check_rule_a = True
-                move_enemy_home_from_poss.append(START_INDEX)
+            # Set the enemy there might be at START_INDEX to moved
+            do_not_check_rule_a = True
+            move_enemy_home_from_poss.append(START_INDEX)
 
         # Star before the home areal
         elif new_piece_pos == STAR_AT_GOAL_AREAL_INDX:
