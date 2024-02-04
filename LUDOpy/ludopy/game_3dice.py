@@ -260,18 +260,11 @@ class Game:
         return after_obs
     
     def calculate_points(self, piece_positions):
-        points = 0
+        point = 0
         for i in range(4):
-            if piece_positions[i]==0:
-                points += 0
-            elif piece_positions[i]==1:
-                points += 10
-            elif piece_positions[i]==59:
-                points += 100
-            else:
-                points += piece_positions[i] + 10
+            point += piece_positions[i]
 
-        return points
+        return point
     
     def points_given(self):
         all_pieces, dice_list, current_dice, players_dice, round_numer = self.hist[-1]

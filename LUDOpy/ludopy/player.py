@@ -1,6 +1,6 @@
 import numpy as np
 
-TOTAL_NUMBER_OF_TAILES = 60
+TOTAL_NUMBER_OF_TAILES = 58
 DICE_MOVE_OUT_OF_HOME = 6
 NO_ENEMY = -1
 
@@ -24,8 +24,8 @@ HOME_INDEX = 0
 START_INDEX = 1
 STAR_INDEXS = [5, 12, 18, 25, 31, 38, 44, 51]
 
-HOME_AREAL_INDEXS = [53, 54, 55, 56, 57, 58]
-GOAL_INDEX = 59
+HOME_AREAL_INDEXS = [52, 53, 54, 55, 56]
+GOAL_INDEX = 57
 GLOB_INDEXS = [9, 22, 35, 48]
 ENEMY_1_GLOB_INDX = 14
 ENEMY_2_GLOB_INDX = 27
@@ -124,7 +124,7 @@ class Player:
     A class used by the Game class. This class is not needed for normal use
     """
 
-    def __init__(self, strategic=False, out_of_home=True):
+    def __init__(self, aggresive=False, responsible=True, out_of_home=True):
         """
         Makes a player with 4 pieces all at the home locations
         """
@@ -132,7 +132,8 @@ class Player:
         self.number_of_pieces = 4
         self.set_all_pieces_to_home()
         self.out_of_home = out_of_home
-        self.strategic = strategic
+        self.aggresive = aggresive
+        self.responsible = responsible
 
     def get_pieces_that_can_move(self, dice):
         """
@@ -150,7 +151,7 @@ class Player:
             # If the piece is a goal then the piece can't move
             if BORD_TILES[piece_place] == TAILE_GOAL:
                 continue
-            
+
             # If the piece is at home and the dice is DICE_MOVE_OUT_OF_HOME then the dice can move out of the home place
             elif BORD_TILES[piece_place] == TAILE_HOME and dice == DICE_MOVE_OUT_OF_HOME and self.out_of_home==False:
                 movable_pieces.append(piece_i)
@@ -160,13 +161,7 @@ class Player:
             # If the piece is not at home or at the goal it can move
             elif BORD_TILES[piece_place] != TAILE_HOME:
                 movable_pieces.append(piece_i)
-            
-            # If the strategic player is more than index 27 remove it.
-            #if self.strategic==True and piece_place+dice>26:
-            #    movable_pieces.remove(piece_i)
-
         return movable_pieces
-
 
     def player_winner(self):
         """
@@ -235,10 +230,8 @@ class Player:
         elif BORD_TILES[old_piece_pos] == TAILE_GOAL_AREAL:
             if new_piece_pos <= GOAL_INDEX:
                 self.pieces[piece] = new_piece_pos
-            else:
-                overshoot = new_piece_pos - GOAL_INDEX
-                new_piece_pos_corrected = old_piece_pos - overshoot
-                self.pieces[piece] = new_piece_pos_corrected
+            
+            # No overshoot
 
         # The Home areal
         elif BORD_TILES[old_piece_pos] == TAILE_HOME:
@@ -249,57 +242,13 @@ class Player:
                 do_not_check_rule_a = True
                 move_enemy_home_from_poss.append(START_INDEX)
 
-            elif self.out_of_home and dice != DICE_MOVE_OUT_OF_HOME:
-                self.pieces[piece] = START_INDEX
-
-                # Set the enemy there might be at START_INDEX to moved
-                do_not_check_rule_a = True
-                move_enemy_home_from_poss.append(START_INDEX)
-
-
         # Star before the home areal
         elif new_piece_pos == STAR_AT_GOAL_AREAL_INDX:
             self.pieces[piece] = GOAL_INDEX
 
-            # Set the enemy there might be at STAR_AT_GOAL_AREAL_INDX to moved
-            move_enemy_home_from_poss.append(new_piece_pos)
-
         # The other stars
-        elif BORD_TILES[new_piece_pos] == TAILE_STAR and self.strategic==False:
-            present_star_staridx = STAR_INDEXS.index(new_piece_pos)
-            next_star_staridx = present_star_staridx + 1
-            if next_star_staridx >= len(STAR_INDEXS):
-                next_star_staridx = 0
-            next_star_pos = STAR_INDEXS[next_star_staridx]
-
-            self.pieces[piece] = next_star_pos
-
-            # Set the enemy there might be at first star or the start there will be jump to to be moved
-            if enemy_at_pos != NO_ENEMY:
-                move_enemy_home_from_poss.append(new_piece_pos)
-
-            next_star_enemy_at_pos, next_star_enemy_pieces_at_pos = get_enemy_at_pos(next_star_pos, enemys)
-            if next_star_enemy_at_pos != NO_ENEMY:
-                move_enemy_home_from_poss.append(next_star_pos)
-
-        # If Strategic player 
-        elif BORD_TILES[new_piece_pos] == TAILE_STAR and self.strategic==True and new_piece_pos!=25:
-            present_star_staridx = STAR_INDEXS.index(new_piece_pos)
-            next_star_staridx = present_star_staridx + 1
-            if next_star_staridx >= len(STAR_INDEXS):
-                next_star_staridx = 0
-            next_star_pos = STAR_INDEXS[next_star_staridx]
-
-            self.pieces[piece] = next_star_pos
-
-            # Set the enemy there might be at first star or the start there will be jump to to be moved
-            if enemy_at_pos != NO_ENEMY:
-                move_enemy_home_from_poss.append(new_piece_pos)
-
-            next_star_enemy_at_pos, next_star_enemy_pieces_at_pos = get_enemy_at_pos(next_star_pos, enemys)
-            if next_star_enemy_at_pos != NO_ENEMY:
-                move_enemy_home_from_poss.append(next_star_pos)
-        
+        elif BORD_TILES[new_piece_pos] == TAILE_STAR:
+            self.pieces[piece] = new_piece_pos
 
         # Globs there are not own by enemy
         elif BORD_TILES[new_piece_pos] == TAILE_GLOB:
@@ -359,7 +308,6 @@ class Player:
 
         return enemys_new
 
-
     def set_all_pieces_to_home(self):
         """
         Sets all the players pieces to the home index
@@ -367,4 +315,3 @@ class Player:
         self.pieces = []
         for i in range(self.number_of_pieces):
             self.pieces.append(HOME_INDEX)
-
