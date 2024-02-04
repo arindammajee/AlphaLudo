@@ -15,10 +15,7 @@ class Game:
         :param ghost_players: Players there are not in the game
         :type ghost_players: list of int
         """
-        if strategic_player==-1:
-            self.players = [Player(), Player(), Player(), Player()]
-        else:
-            self.players = [Player(strategic=True), Player(), Player(), Player()]
+        self.players = [Player(), Player(), Player(), Player()]
         self.hist = []
         self.round = 1
         self.current_player = 0

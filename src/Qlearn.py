@@ -11,7 +11,7 @@ import ludopy
 sys.path.append("../")
 
 
-def Qlearn(player0, ghosts):
+def QLearnVsRandom(player0, ghosts):
     g = ludopy.Game(ghost_players=[1, 3])
     there_is_a_winner = False
     actions = 0
