@@ -97,6 +97,7 @@ class Game:
         self.current_enemys = []
         self.current_start_attempts = 0
         self.game_winners = []
+        self.dummy_obs = None
 
     def _gen_observation(self, player_idx, roll_dice=True):
         if roll_dice:
@@ -156,6 +157,10 @@ class Game:
 
         # Add the bord and dice before the move to the history
         self._add_to_hist()
+
+        # Set dummy observation
+        self.dummy_obs = [obs, self.current_player]
+
         return obs, self.current_player
 
     def _count_player(self):
@@ -326,7 +331,7 @@ class Game:
 
         """
         file_ext = file_name.split(".")[-1]
-        assert file_ext == "npz", "The file extension has to be npy (numpy file)"
+        assert file_ext == "npy", "The file extension has to be npy (numpy file)"
         np.savez(file_name, **self.hist)
 
     def save_hist_video(self, video_out, fps=8, frame_size=None, fourcc=None):
