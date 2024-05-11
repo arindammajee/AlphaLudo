@@ -98,6 +98,7 @@ class Game:
         self.current_start_attempts = 0
         self.game_winners = []
         self.dummy_obs = None
+        self.points = [0, 0, 0, 0]
 
     def _gen_observation(self, player_idx, roll_dice=True):
         if roll_dice:
@@ -220,13 +221,13 @@ class Game:
 
         next_player = True
         # In the first round the players has 3 attempts to get a piece out of home
-        if self.round == 1 and \
-                all(p_piece == 0 for p_piece in self.players[self.current_player].get_pieces()) and \
-                self.current_start_attempts < 3:
-            self.current_start_attempts += 1
-            next_player = False
-        else:
-            self.current_start_attempts = 0
+        # if self.round == 1 and \
+        #         all(p_piece == 0 for p_piece in self.players[self.current_player].get_pieces()) and \
+        #         self.current_start_attempts < 3:
+        #     self.current_start_attempts += 1
+        #     next_player = False
+        # else:
+        #     self.current_start_attempts = 0
         # If it is not in the first round a dice on 6 will give an extra move
         if self.round != 1 and self.current_dice == 6:
             next_player = False
@@ -240,6 +241,9 @@ class Game:
         # If it is the next players turn then change current_player
         if next_player:
             self._count_player()
+
+        # Update the points
+        self.points[self.current_player] += 1
 
         return after_obs
 

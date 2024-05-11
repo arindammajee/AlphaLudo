@@ -30,9 +30,9 @@ class Node:
         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
          there_is_a_winner), player_i = self.game_state.dummy_obs
 
-        print(move_pieces)
+        # print(move_pieces)
         for move in move_pieces:
-            print("Move", move)
+            # print("Move", move)
             new_game_state = deepcopy(self.game_state)
             new_game_state.observation_pending = False
             _, _ = new_game_state.get_observation()
@@ -47,7 +47,7 @@ class MCTS:
     def __init__(self, game):
         self.game = game
 
-    def search(self, iterations=1):
+    def search(self, iterations=20):
         root = Node(deepcopy(self.game))
         root.expand()
 
@@ -57,7 +57,7 @@ class MCTS:
 
             # Selection
             while node.children:
-                print(node.best_child())
+                # print(node.best_child())
                 node = node.best_child()
                 game.answer_observation(node.move)
 
@@ -80,11 +80,11 @@ class MCTS:
                 game.answer_observation(piece_to_move)
 
             # Backpropagation
-            result = game.get_winner_of_game()
+            result = game.points[2]
             while node is not None:
                 node.update(result)
                 node = node.parent
+                #print("Result", result)
             
-            break
 
         return root.best_child().move
