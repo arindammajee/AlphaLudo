@@ -196,6 +196,7 @@ class Game:
                                "There has to be a pending observation has to be answered first")
         # Check if the given piece_to_move is among the current_move_pieces
         if len(self.current_move_pieces) and piece_to_move not in self.current_move_pieces:
+            print("current_move_pieces", self.current_move_pieces)
             raise RuntimeError("The piece given has to be among the given move_pieces")
         # If it is then move the piece
         elif len(self.current_move_pieces):
@@ -219,6 +220,8 @@ class Game:
         # Add the bord after the move to the history
         self._add_to_hist()
 
+        # Update the points
+        self.points[self.current_player] = self.players[self.current_player].get_pieces().sum()
         next_player = True
         # In the first round the players has 3 attempts to get a piece out of home
         # if self.round == 1 and \
@@ -230,7 +233,7 @@ class Game:
         #     self.current_start_attempts = 0
         # If it is not in the first round a dice on 6 will give an extra move
         if self.round != 1 and self.current_dice == 6:
-            next_player = False
+            next_player = True
 
         # Set the observation pending to false as the last given observation was handled
         self.observation_pending = False
@@ -242,8 +245,6 @@ class Game:
         if next_player:
             self._count_player()
 
-        # Update the points
-        self.points[self.current_player] += 1
 
         return after_obs
 
