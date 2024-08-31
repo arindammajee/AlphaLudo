@@ -2,7 +2,6 @@ import numpy as np
 from copy import deepcopy
 import random
 
-
 class Node:
     def __init__(self, game_state, parent=None, move=None, player=2):
         self.game_state = game_state
@@ -30,11 +29,9 @@ class MCTS:
         self.game = game
         self.root = Node(deepcopy(self.game))
 
-    def selection(self, node, node_depth=5):
+    def selection(self, node):
         while len(node.children) != 0:
             #print(f"Current node depth: {node.depth} and isFullyExpanded: {node.fully_expanded} with visits: {node.visits}")
-            #for child in node.children.values():
-            #    print(f"        Child {child} has UCT value {child.uct_value()} with visit {child.visits}")
             best_child = self.get_best_child(node)
             node = best_child
             if best_child.visits == 0:
@@ -98,37 +95,18 @@ class MCTS:
                 best_nodes.append(child)
         return random.choice(best_nodes)
 
-    def print_nodes(self, node):
-        while node is not None:
-            space = " "
-            for child in node.children.values():
-                node = child
-                #print(f"{space} Depth {node.depth} Node {node}, Node Points {node.total_rewards}, children {node.children}")
-                space = "    " * len(space)
-
-            if not node.children:
-                break
-
-    def executeRound(self, node_depth=3):
+    def executeRound(self):
         # execute a selection-expansion-simulation-backpropagation round
-        node = self.selection(self.root, node_depth=node_depth)
+        node = self.selection(self.root)
         #print(f"Received node of depth: {node.depth} and isFullyExpanded: {node.is_terminal} with visit count: {node.visits}")
-        #print(f"Depth {node.depth} Parent {node.parent} Node {node}, Node Points {node.total_rewards}, children {node.children}")
-        #for child in self.root.children.values():
-        #    print(f"         Child Node {child}, Parent {node.parent} Node Points {child.total_rewards}, children {child.children}")
-        #print(self.print_nodes(self.root))
         node.game_state.observation_pending = False
-        #print("Starting Rollout Round")
         reward = self.rollout(node)
-        #print("Starting Backpropagation")
         self.backpropogate(node, reward)
-        #print("Finished Rollout Round", self.root.visits)
 
 
-
-    def search(self, iterations=100, node_depth=5, exploration_param=2):
+    def search(self, iterations=100, exploration_param=2):
         for i in range(iterations):
-            self.executeRound(node_depth=node_depth)
+            self.executeRound()
 
         best_child = self.get_best_child(self.root)
 

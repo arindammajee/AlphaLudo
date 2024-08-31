@@ -7,7 +7,7 @@ sys.path.append("/Users/arimajee/Desktop/Arindam/A-Reinforcement-Learning-Approa
 from ludopy import Game
 from VanilaMCTS import MCTS  # Assuming you have a MCTS implementation
 
-def simulate_game(mcts_iterations=10, node_depth=3):
+def simulate_game(mcts_iterations=10):
     game = Game(ghost_players=[1, 3])
 
     there_is_a_winner = False
@@ -16,19 +16,15 @@ def simulate_game(mcts_iterations=10, node_depth=3):
         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
          there_is_a_winner), player_i = game.get_observation()
         if len(move_pieces):
-            if player_i == 0:  # Random player
-                #print("Random Player's Turn")
+            if player_i == 0:
                 piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
             else:  # MCTS player
-                #print("MCTS Turn")
-                #print(game.points)
                 if len(move_pieces) > 1:
                     mcts = MCTS(game)
-                    piece_to_move = mcts.search(iterations=mcts_iterations, node_depth=node_depth)
+                    piece_to_move = mcts.search(iterations=mcts_iterations)
                 else:
                     piece_to_move = move_pieces[0]
                 count += 1
-                #print("MCTS player moves", piece_to_move, "with dice", dice, "Search count ", count)
         else:
             piece_to_move = -1
 
@@ -42,19 +38,23 @@ def simulate_game(mcts_iterations=10, node_depth=3):
 
     return game.first_winner_was
 
-if __name__ == '__main__':
-    print("Simulating game")
-    TOTAL_GAMES = 10
-    MCTS_ITERATIONS = 20
-    MCTS_DEPTH = 5
+
+def simulate_mcts_experiment(TOTAL_GAMES=1000, MCTS_ITERATIONS=10):
+    print("Simulating MCTS Experiment")
     MCTS_WIN = 0
     start_time = time.time()
     for i in range(TOTAL_GAMES):
-        if simulate_game(mcts_iterations=MCTS_ITERATIONS, node_depth=MCTS_DEPTH) == 2:
+        if simulate_game(mcts_iterations=MCTS_ITERATIONS) == 2:
             MCTS_WIN += 1
-        print(f"Game Number: {i+1}, MCTS win rate: {MCTS_WIN / (i+1)}, Took {time.time() - start_time} seconds")
+        print(f"Game Number: {i + 1}, MCTS win rate: {MCTS_WIN / (i + 1)}, Took {time.time() - start_time} seconds")
 
     end_time = time.time()
     print("Simulation took", end_time - start_time, "seconds")
+
+
+if __name__ == '__main__':
+    TOTAL_GAMES = 100
+    MCTS_ITERATIONS = 5
+    simulate_mcts_experiment(TOTAL_GAMES, MCTS_ITERATIONS)
 
     
