@@ -21,8 +21,8 @@ class Node:
         if self.visits == 0:
             return float("inf")
         else:
-            return self.total_rewards / self.visits + exploration_param * np.sqrt(
-                2 * np.log(self.parent.visits) / self.visits)
+            return (self.total_rewards / self.visits) + exploration_param * np.sqrt(
+                2 * (np.log(self.parent.visits) / self.visits))
 
 
 class MCTS:
@@ -31,15 +31,22 @@ class MCTS:
         self.root = Node(deepcopy(self.game))
 
     def selection(self, node, node_depth=5):
-        while not node.is_terminal and node.depth <= node_depth:
-            if node.fully_expanded:
-                return self.get_best_child(node)
-            else:
-                self.expand(node)
+        while len(node.children) != 0:
+            #print(f"Current node depth: {node.depth} and isFullyExpanded: {node.fully_expanded} with visits: {node.visits}")
+            #for child in node.children.values():
+            #    print(f"        Child {child} has UCT value {child.uct_value()} with visit {child.visits}")
+            best_child = self.get_best_child(node)
+            node = best_child
+            if best_child.visits == 0:
+                break
+
+        if not node.is_terminal:
+            self.expand(node)
 
         return node
 
     def expand(self, node):
+        #print("Expanding node.........")
         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
          there_is_a_winner), player_i = node.game_state.dummy_obs
         for move in move_pieces:
@@ -96,7 +103,7 @@ class MCTS:
             space = " "
             for child in node.children.values():
                 node = child
-                print(f"{space} Depth {node.depth} Node {node}, Node Points {node.total_rewards}, children {node.children}")
+                #print(f"{space} Depth {node.depth} Node {node}, Node Points {node.total_rewards}, children {node.children}")
                 space = "    " * len(space)
 
             if not node.children:
@@ -105,10 +112,11 @@ class MCTS:
     def executeRound(self, node_depth=3):
         # execute a selection-expansion-simulation-backpropagation round
         node = self.selection(self.root, node_depth=node_depth)
-        print(f"Depth {node.depth} Parent {node.parent} Node {node}, Node Points {node.total_rewards}, children {node.children}")
-        for child in self.root.children.values():
-            print(f"         Child Node {child}, Parent {node.parent} Node Points {child.total_rewards}, children {child.children}")
-        print(self.print_nodes(self.root))
+        #print(f"Received node of depth: {node.depth} and isFullyExpanded: {node.is_terminal} with visit count: {node.visits}")
+        #print(f"Depth {node.depth} Parent {node.parent} Node {node}, Node Points {node.total_rewards}, children {node.children}")
+        #for child in self.root.children.values():
+        #    print(f"         Child Node {child}, Parent {node.parent} Node Points {child.total_rewards}, children {child.children}")
+        #print(self.print_nodes(self.root))
         node.game_state.observation_pending = False
         #print("Starting Rollout Round")
         reward = self.rollout(node)

@@ -25,7 +25,6 @@ def simulate_game(mcts_iterations=10, node_depth=3):
                 if len(move_pieces) > 1:
                     mcts = MCTS(game)
                     piece_to_move = mcts.search(iterations=mcts_iterations, node_depth=node_depth)
-                    break
                 else:
                     piece_to_move = move_pieces[0]
                 count += 1
@@ -45,9 +44,9 @@ def simulate_game(mcts_iterations=10, node_depth=3):
 
 if __name__ == '__main__':
     print("Simulating game")
-    TOTAL_GAMES = 1
-    MCTS_ITERATIONS = 50
-    MCTS_DEPTH = 3
+    TOTAL_GAMES = 10
+    MCTS_ITERATIONS = 20
+    MCTS_DEPTH = 5
     MCTS_WIN = 0
     start_time = time.time()
     for i in range(TOTAL_GAMES):
