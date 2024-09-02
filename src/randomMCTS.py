@@ -89,7 +89,7 @@ if __name__ == '__main__':
         mcts_win_rate, simulation_total_time = simulate_mcts_experiment(TOTAL_GAMES=total_games,
                                                                         MCTS_RUN_TIME=mcts_run_time,
                                                                         isTimeBounded=True,
-                                                                        multiprocessing_num=20)
+                                                                        multiprocessing_num=8)
 
         wandb.log({"MCTS win percentage": mcts_win_rate*100, "MCTS simulation time": simulation_total_time})
         print(f'MCTS simulation for {total_games} with allowed MCTS run time of {mcts_run_time} Ended ................')
