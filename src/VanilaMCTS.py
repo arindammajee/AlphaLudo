@@ -120,7 +120,7 @@ class MCTS:
     def search(self):
         start = time.time()
         if self.isTimeBounded:
-            while time.process_time() - start < self.reserved_time:
+            while time.time() - start < self.reserved_time:
                 self.execute_round()
         else:
             for i in range(self.num_iterations):
@@ -128,5 +128,5 @@ class MCTS:
 
         best_child = self.get_best_child(self.root)
         self.run_time = time.time() - start
-        print(f"MCTS search took {self.run_time} seconds for total {self.total_rollouts} rollouts")
+        # print(f"MCTS search took {self.run_time} seconds for total {self.total_rollouts} rollouts")
         return best_child.move
