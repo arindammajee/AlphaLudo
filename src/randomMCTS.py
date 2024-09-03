@@ -77,10 +77,10 @@ def simulate_mcts_experiment(TOTAL_GAMES, MCTS_RUN_TIME=0.01, MCTS_ITERATIONS=10
 if __name__ == '__main__':
     mcts_run_time_list = [0.08, 0.09, 0.1]
     total_games = 512
-    # wandb.init(project="MCTS-LUDO",
-    #            name=f"MultiProcessing Random Player vs MCTS Player_2024-09-01 21:17:03.629611",
-    #           config={"Total Games": total_games,
-    #                    "MCTS Run Time": mcts_run_time_list})
+    wandb.init(project="MCTS-LUDO",
+               name=f"MultiProcessing Random Player vs MCTS Player {datetime.datetime.now()}",
+               config={"Total Games": total_games,
+                       "MCTS Run Time": mcts_run_time_list})
 
     for mcts_run_time in mcts_run_time_list:
         print(f'Running MCTS simulation for {total_games} with allowed MCTS run time of {mcts_run_time}'
@@ -93,4 +93,4 @@ if __name__ == '__main__':
         # wandb.log({"MCTS win percentage": mcts_win_rate*100, "MCTS simulation time": simulation_total_time})
         print(f'MCTS simulation for {total_games} with allowed MCTS run time of {mcts_run_time} Ended ................')
 
-    # wandb.finish()
+    wandb.finish()
