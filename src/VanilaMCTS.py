@@ -61,7 +61,21 @@ class MCTS:
                 child_node.observation_pending = True
                 # _, _ = child_node.get_observation()
                 child_node.answer_observation(move)
+
+                # Play opponent's turn
+                ((opponent_dice, opponent_move_pieces, opponent_player_pieces, opponent_enemy_pieces,
+                 opponent_player_is_a_winner, opponent_there_is_a_winner),
+                 opponent_player_i) = child_node.get_observation()
+
+                if len(opponent_move_pieces):
+                    opponent_piece_to_move = opponent_move_pieces[np.random.randint(0, len(opponent_move_pieces))]
+                else:
+                    opponent_piece_to_move = -1
+
+                child_node.answer_observation(opponent_piece_to_move)
                 _, _ = child_node.get_observation()
+
+                # Create a new Node
                 child_node = Node(child_node, parent=node, move=move)
                 node.children[move] = child_node
                 if len(move_pieces) == len(node.children):
