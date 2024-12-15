@@ -1,4 +1,4 @@
-# A Reinforcement Learning Approach to Ludo
+# AlphaLudo - A Reinforcement Learning Approach to Ludo
 A Q learning AI player for the LUDO board game.
 
 $${\color{red}This \space work \space is \space a \space a \space ongoing  \space project \space and \space may \space not \space reflect \space real \space time \space updates. \space We \space appreciate \space your \space understanding.}$$
