@@ -1,6 +1,8 @@
 # A Reinforcement Learning Approach to Ludo
 A Q learning AI player for the LUDO board game.
 
+$${\color{red}This \space work \space is \space a \space a \space ongoing  \space project \space and \space may \space not \space reflect \space real \space time \space updates. \space We \space appreciate \space your \space understanding.}$$
+
 ## Motivation
 The object of the project was to create a player policy that learns to play the board game LUDO using a common reinforcement learning technique. The player policy was compared against a random action selecting opponent. The code largely influenced by https://github.com/NDurocher/YARAL
 
