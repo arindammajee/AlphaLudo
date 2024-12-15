@@ -1,72 +1,68 @@
 # AlphaLudo - A Reinforcement Learning Approach to Ludo
-A Q learning AI player for the LUDO board game.
 
-$${\color{red}This \space work \space is \space a \space a \space ongoing  \space project \space and \space may \space not \space reflect \space real \space time \space updates. \space We \space appreciate \space your \space understanding.}$$
+$${\color{red}This \space project \space is \space under \space active \space development. \space Future \space updates \space and \space improvements \space are \space planned.}$$
 
-## Motivation
-The object of the project was to create a player policy that learns to play the board game LUDO using a common reinforcement learning technique. The player policy was compared against a random action selecting opponent. The code largely influenced by https://github.com/NDurocher/YARAL
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Motivation and Research Objectives](#motivation-and-research-objectives)
+3. [Methodology](#methodology)
+4. [Key Findings](#key-findings)
+5. [Future Work](#future-work)
+6. [Conclusion](#conclusion)
+7. [Acknowledgment](#acknowledgment)
+8. [References](#references)
 
-## Features
-The player utilizes a state space of:
-1. Home
-2. Goal Zone
-3. Safe
-4. Danger
+---
 
-The home state refers to when the piece is not in play and can only be moved
-when a six is rolled. A piece is in the goal zone when it occupies one of the final
-six spaces before the goal. The safe state is when the piece is either on a globe
-tile or when it is not within six tiles of an opponents piece such that it could be
-sent home by the next roll. Finally, the danger state is defined when the pieces
-is within striking distance of an enemy piece or on the coloured globe tile at the
-opponents home. 
+## Introduction
+AlphaLudo is a reinforcement learning-based implementation of the classic Indian board game Ludo. This project applies cutting-edge AI methodologies to create competitive game-playing agents. The development is inspired by Google’s AlphaZero and explores both traditional and deep learning-based approaches.
 
-The player's action space consisting of 10 actions for various scenarios:
-1. Open
-2. Normal
-3. Goal
-4. Star
-5. Globe
-6. Protect
-7. Kill
-8. Overshoot Goal
-9. Goal Zone
-10. Null
+---
 
-The open, normal, goal, star, globe, protect and kill moves are all standard
-playing moves defined by the rules of the game. However, the overshoot goal and
-goal zone moves are added classification moves to effect the priority of moves
-near the goal. In particular the overshoot goal move is used as an unwanted
-action that occurs when a piece is in the goal area but the dice roll is higher
-than the number of tiles needed to reach the goal. Finally the null action is a placeholder for when the player
-has no active pieces to move.
+## Motivation and Research Objectives
+The goal of this project is to explore reinforcement learning techniques applied to complex board games. Ludo presents an interesting challenge due to its stochastic nature, requiring agents to balance strategic planning and adaptability. The project focuses on:
+- Developing intelligent agents using Monte Carlo Tree Search (MCTS) and Policy Value Networks.
+- Comparing and analyzing the performance of these models.
+- Exploring optimization methods for enhancing agent performance.
 
-The Q values are updated based on the standard temporal differnce equation:
+---
 
-![Q_learn_update](./Images/Q_learning_update.png)
+## Methodology
+### Implemented Models
+1. **Vanilla Monte Carlo Tree Search (MCTS):**
+   - Uses a search-based approach balancing exploration and exploitation.
+   - Efficiently navigates game states through tree-based exploration.
 
-## Results
-The player policy was able to dominate a random selection player winning 83%, 70%, and 60% of games against one two and three opponents respectively.
-![random_resuts](./Images/WR_all3Opp.png)
+2. **Policy Value Network:**
+   - Leverages neural networks for game state evaluation and move prediction.
+   - Incorporates deep learning models inspired by AlphaZero.
 
-The player policy was also able to win a significant amount of games against a classmates policy player, where is won 68%, 52%, and 41% of games against one two and three opponents respectively.
-![random_resuts](./Images/WR_all3Jan.png)
+---
 
-## How to use?
-To use my player import Qlearn.py and Qs.txt from /src and ludopy from /LUDOpy/
+## Key Findings
+- Vanilla MCTS demonstrated superior performance compared to the Policy Value Network, excelling in both strategic planning and decision-making.
+- The Policy Value Network shows promising potential, though it currently underperforms compared to MCTS.
 
-Define player:
-```
-player0 = Qplayer(tableName="/PATH/to/Qs.txt")
-```
-Make move:
-```
-  player0.nextmove(player_i, player_pieces, enemy_pieces, dice, move_pieces)
-            piece_to_move = player0.piece
-            _, _, new_P0, new_enemy, _, there_is_a_winner = g.answer_observation(piece_to_move)
-```
+---
 
-## Credits
-LUDOpy developed by https://github.com/SimonLBSoerensen/LUDOpy.
+## Future Work
+- **Online Evolutionary Algorithms:** Plan to integrate evolutionary algorithms for dynamic optimization of MCTS.
+- **Enhanced Learning Models:** Further refine the Policy Value Network with deeper architectures and better training data.
 
-YARAL: Yet Another Reinforcement Learning Approach to Ludo - https://github.com/NDurocher/YARAL
+---
+
+## Conclusion
+AlphaLudo successfully implements reinforcement learning-based agents capable of playing the board game Ludo. The project demonstrates the effectiveness of MCTS and highlights future directions for improving deep learning-based strategies.
+
+---
+
+## Acknowledgment
+We acknowledge the inspiration provided by **Google’s AlphaZero Project** and contributions from the reinforcement learning research community.
+
+---
+
+## References
+- **Google’s AlphaZero Project**: A major source of inspiration.
+- **Research Papers**: Relevant studies on Monte Carlo Tree Search and reinforcement learning methodologies.
+
+Stay tuned for more updates as we continue enhancing AlphaLudo!
