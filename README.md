@@ -1,6 +1,6 @@
 # AlphaLudo - A Reinforcement Learning Approach to Ludo
 
-$${\color{red}This \space project \space is \space under \space active \space development. \space Future \space updates \space and \space improvements \space are \space planned.}$$
+$${\color{red}This \space work \space is \space a \space ongoing  \space project \space and \space may \space not \space reflect \space real \space time \space updates. \space We \space appreciate \space your \space understanding.}$$
 
 ## Table of Contents
 1. [Introduction](#introduction)
