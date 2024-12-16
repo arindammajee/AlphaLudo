@@ -68,4 +68,4 @@ AlphaLudo successfully implements reinforcement learning-based agents capable of
   
    1.Świechowski, Maciej, Konrad Godlewski, Bartosz Sawicki, and Jacek Mańdziuk. "Monte Carlo tree search: A review of recent modifications and applications." Artificial Intelligence Review 56, no. 3 (2023): 2497-2562.
 
-Stay tuned for more updates as we continue enhancing AlphaLudo!
+Stay tuned for more updates as we continue enhancing AlphaLudo! For further information, feel free to contact **Arindam Majee (Email - majeearindam4@gmail.com)** or submit issues through this repository. Contributions and collaborative discussions are welcome!
