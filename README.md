@@ -43,6 +43,12 @@ The goal of this project is to explore reinforcement learning techniques applied
 - Vanilla MCTS demonstrated superior performance compared to the Policy Value Network, excelling in both strategic planning and decision-making.
 - The Policy Value Network shows promising potential, though it currently underperforms compared to MCTS.
 
+We build the vanilla MCTS for a fixed number of depths for 1000 games and found that with the winning percentage is increasing as we build the tree more deeper.
+
+| MCTS Simulation Time vs MCTS Tree Depth | MCTS Win Percentage over Random player vs MCTS Tree Depth |
+|---|---|
+| ![images/VanillaMCTSvsRandomPlayerSimulationTime.png](images/VanillaMCTSvsRandomPlayerSimulationTime.png) | ![images/VanillaMCTSvsRandomPlayerWinnPercentage.png](images/VanillaMCTSvsRandomPlayerWinnPercentage.png) |
+
 ---
 
 ## Future Work
@@ -56,13 +62,10 @@ AlphaLudo successfully implements reinforcement learning-based agents capable of
 
 ---
 
-## Acknowledgment
-We acknowledge the inspiration provided by **Google’s AlphaZero Project** and contributions from the reinforcement learning research community.
-
----
-
 ## References
-- **Google’s AlphaZero Project**: A major source of inspiration.
-- **Research Papers**: Relevant studies on Monte Carlo Tree Search and reinforcement learning methodologies.
+- **Google’s AlphaZero Project**: https://deepmind.google/discover/blog/alphazero-shedding-new-light-on-chess-shogi-and-go/
+- **Research Papers**:
+  
+   1.Świechowski, Maciej, Konrad Godlewski, Bartosz Sawicki, and Jacek Mańdziuk. "Monte Carlo tree search: A review of recent modifications and applications." Artificial Intelligence Review 56, no. 3 (2023): 2497-2562.
 
 Stay tuned for more updates as we continue enhancing AlphaLudo!
