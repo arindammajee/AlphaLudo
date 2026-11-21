@@ -1,3 +1,7 @@
+# Historical upstream packaging for LUDOpy (Simon L. B. Sørensen, MIT).
+# The engine implementation now lives in src/ludopy. Install from the
+# repository root (pyproject.toml). This file is kept so the upstream
+# metadata remains visible. It does not relicense the engine.
 import setuptools
 
 with open("README.md", "r") as fh:

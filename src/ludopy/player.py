@@ -1,4 +1,13 @@
+# Derived from LUDOpy, Copyright (c) 2020 SimonLBS, MIT License.
+# The MIT notice is preserved in LICENSE.MIT next to this file.
+# AlphaLudo modifications are described in the repository README.
+# This notice does not relicense the file.
+
 import numpy as np
+
+RULESET_CLASSIC = "classic"
+RULESET_LEGACY = "legacy"
+RULESETS = (RULESET_CLASSIC, RULESET_LEGACY)
 
 TOTAL_NUMBER_OF_TAILES = 58
 DICE_MOVE_OUT_OF_HOME = 6
@@ -80,6 +89,37 @@ def enemy_pos_at_pos(pos):
     return enemy_pos
 
 
+def validate_ruleset(ruleset):
+    """Return ruleset if it is one of the two supported bundles."""
+    if ruleset not in RULESETS:
+        raise ValueError(
+            f"Unknown ruleset {ruleset!r}. Expected {RULESET_CLASSIC!r} or {RULESET_LEGACY!r}."
+        )
+    return ruleset
+
+
+def pass_turn(ruleset, round_number, dice, pieces, start_attempts):
+    """Decide whether the turn passes, and the updated opening-attempt count.
+
+    classic follows upstream LUDOpy. While every piece is still at home in
+    round 1, the turn is kept when the attempt counter is below 3. A player
+    who never rolls a 6 therefore rolls four times, and the fourth roll
+    passes the turn. After round 1 a 6 grants another roll. legacy always
+    passes the turn. That is the behaviour this fork had before the ruleset
+    switch, which the old notebooks were measured on.
+    """
+    validate_ruleset(ruleset)
+    if ruleset == RULESET_LEGACY:
+        return True, start_attempts
+    still_home = all(int(piece) == 0 for piece in pieces)
+    if round_number == 1 and still_home and start_attempts < 3:
+        return False, start_attempts + 1
+    start_attempts = 0
+    if round_number != 1 and dice == 6:
+        return False, start_attempts
+    return True, start_attempts
+
+
 def get_enemy_at_pos(pos, enemys):
     """
     Returns the enemy's and the pieces they have at the given location
@@ -124,14 +164,20 @@ class Player:
     A class used by the Game class. This class is not needed for normal use
     """
 
-    def __init__(self, aggresive=False, responsible=True, out_of_home=True):
+    def __init__(self, aggresive=False, responsible=True, out_of_home=None, ruleset=RULESET_CLASSIC):
         """
-        Makes a player with 4 pieces all at the home locations
+        Makes a player with 4 pieces all at the home locations.
+
+        ruleset selects a whole bundle of movement rules. out_of_home is
+        accepted so older callers do not raise, and is stored, but movement
+        follows ruleset. classic leaves home only on a 6. legacy leaves home
+        on any face.
         """
+        self.ruleset = validate_ruleset(ruleset)
         self.pieces = []
         self.number_of_pieces = 4
         self.set_all_pieces_to_home()
-        self.out_of_home = out_of_home
+        self.out_of_home = self.ruleset == RULESET_LEGACY if out_of_home is None else bool(out_of_home)
         self.aggresive = aggresive
         self.responsible = responsible
 
@@ -152,12 +198,10 @@ class Player:
             if BORD_TILES[piece_place] == TAILE_GOAL:
                 continue
 
-            # If the piece is at home and the dice is DICE_MOVE_OUT_OF_HOME then the dice can move out of the home place
-            elif BORD_TILES[piece_place] == TAILE_HOME and dice == DICE_MOVE_OUT_OF_HOME and self.out_of_home==False:
-                movable_pieces.append(piece_i)
-            # If the piece is at home and out_of_home is TRUE
-            elif BORD_TILES[piece_place] == TAILE_HOME and self.out_of_home==True:
-                movable_pieces.append(piece_i)
+            elif BORD_TILES[piece_place] == TAILE_HOME:
+                # classic: a 6 is required. legacy: any face leaves home.
+                if self.ruleset == RULESET_LEGACY or dice == DICE_MOVE_OUT_OF_HOME:
+                    movable_pieces.append(piece_i)
             # If the piece is not at home or at the goal it can move
             elif BORD_TILES[piece_place] != TAILE_HOME:
                 movable_pieces.append(piece_i)
@@ -231,23 +275,43 @@ class Player:
         elif BORD_TILES[old_piece_pos] == TAILE_GOAL_AREAL:
             if new_piece_pos <= GOAL_INDEX:
                 self.pieces[piece] = new_piece_pos
-            
-            # No overshoot
+            elif self.ruleset == RULESET_CLASSIC:
+                overshoot = new_piece_pos - GOAL_INDEX
+                self.pieces[piece] = old_piece_pos - overshoot
+            # legacy: an overshoot does not move the piece
 
         # The Home areal
         elif BORD_TILES[old_piece_pos] == TAILE_HOME:
-            self.pieces[piece] = START_INDEX
+            if self.ruleset == RULESET_CLASSIC and dice != DICE_MOVE_OUT_OF_HOME:
+                pass
+            else:
+                self.pieces[piece] = START_INDEX
+                # An enemy standing on the start square is sent home.
+                do_not_check_rule_a = True
+                move_enemy_home_from_poss.append(START_INDEX)
 
-            # Set the enemy there might be at START_INDEX to moved
-            do_not_check_rule_a = True
-            move_enemy_home_from_poss.append(START_INDEX)
-
-        # Star before the home areal
+        # Star before the home areal. Landing exactly on it enters the goal.
         elif new_piece_pos == STAR_AT_GOAL_AREAL_INDX:
             self.pieces[piece] = GOAL_INDEX
+            if self.ruleset == RULESET_CLASSIC:
+                move_enemy_home_from_poss.append(new_piece_pos)
 
         # The other stars
+        elif BORD_TILES[new_piece_pos] == TAILE_STAR and self.ruleset == RULESET_CLASSIC:
+            present_star_staridx = STAR_INDEXS.index(new_piece_pos)
+            next_star_staridx = present_star_staridx + 1
+            if next_star_staridx >= len(STAR_INDEXS):
+                next_star_staridx = 0
+            next_star_pos = STAR_INDEXS[next_star_staridx]
+            self.pieces[piece] = next_star_pos
+            if enemy_at_pos != NO_ENEMY:
+                move_enemy_home_from_poss.append(new_piece_pos)
+            next_star_enemy_at_pos, _next_pieces = get_enemy_at_pos(next_star_pos, enemys)
+            if next_star_enemy_at_pos != NO_ENEMY:
+                move_enemy_home_from_poss.append(next_star_pos)
+
         elif BORD_TILES[new_piece_pos] == TAILE_STAR:
+            # legacy: stay on the star. No jump and no capture.
             self.pieces[piece] = new_piece_pos
 
         # Globs there are not own by enemy

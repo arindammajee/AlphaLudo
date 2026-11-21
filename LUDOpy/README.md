@@ -1,5 +1,7 @@
 # LUDOpy
 
+The playable engine has moved to `src/ludopy` in the AlphaLudo repository. `LUDOpy/ludopy/__init__.py` only redirects imports onto that tree. See the repository root `README.md` for rulesets, licence split, and how to run the tests.
+
 This is a implementation of the LUDO game in python for use in AI or whatever you want.  
  
 For normal use of ludopy only ludopy.Game should be needed.
