@@ -1,2 +1,5 @@
-include ludopy/star.png
-include ludopy/glob.png
+include src/ludopy/star.png
+include src/ludopy/glob.png
+include src/ludopy/LICENSE.MIT
+include README.md
+include requirements.txt

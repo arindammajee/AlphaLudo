@@ -12,7 +12,7 @@ sys.path.append("../")
 
 
 def QLearnVsRandom(player0, ghosts):
-    g = ludopy.Game(ghost_players=[1, 3])
+    g = ludopy.Game(ghost_players=[1, 3], ruleset="legacy")
     there_is_a_winner = False
     actions = 0
     overshoots = 0

@@ -88,9 +88,9 @@ def GameSimulation(run_num=1, num_round=GAME_LENGTH, print_each_result=False, ga
   for run in range(run_num):
     ## GAME Setup   
     if NUM_PLAYERS==2:
-      g = ludopy.Game(ghost_players=[1, 3], strategic_player=0)  # This will prevent players 1 and 3 from moving out of the start and thereby they are not in the game
+      g = ludopy.Game3Dice(ghost_players=[1, 3], strategic_player=0, ruleset="legacy")  # This will prevent players 1 and 3 from moving out of the start and thereby they are not in the game
     else:
-      g = ludopy.Game()
+      g = ludopy.Game3Dice(ruleset="legacy")
     if game_type==1:
       player2 = Qplayer(tableName=os.path.join(qlearn_dir, 'src/Qs.txt'))
 

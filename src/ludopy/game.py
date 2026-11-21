@@ -1,6 +1,11 @@
+# Derived from LUDOpy, Copyright (c) 2020 SimonLBS, MIT License.
+# The MIT notice is preserved in LICENSE.MIT next to this file.
+# AlphaLudo modifications are described in the repository README.
+# This notice does not relicense the file.
+
 import collections
 
-from .player import Player
+from .player import Player, pass_turn, validate_ruleset
 from .visualizer import make_img_of_board, save_hist_video
 import numpy as np
 
@@ -10,30 +15,38 @@ class Game:
     The Game. This class is the only needed class for normal use
     """
 
-    def __init__(self, ghost_players=None):
+    def __init__(self, ghost_players=None, strategic_player=-1, ruleset="classic", seed=None):
         """
-        Maked a game with 4 players
+        Make a game with 4 players.
 
-        :param ghost_players: Players there are not in the game
+        :param ghost_players: Players who are skipped. They never leave home.
         :type ghost_players: list of int
+        :param strategic_player: Stored for older experiment scripts. The engine
+            does not play this seat itself.
+        :param ruleset: "classic" (upstream Danish LUDOpy rules, the default)
+            or "legacy" (this fork's pre-ruleset behaviour).
+        :param seed: Optional seed for this game's dice generator.
         """
         if ghost_players is None:
             ghost_players = []
-        self.reset()
+        self.ghost_players = list(ghost_players)
+        self.strategic_player = strategic_player
+        self.ruleset = validate_ruleset(ruleset)
+        self.seed = seed
         self.enemys_order = {
             0: [1, 2, 3],
             1: [2, 3, 0],
             2: [3, 0, 1],
             3: [0, 1, 2]
         }
-        self.ghost_players = ghost_players
+        self.reset()
 
     def _dice_generator(self):
         """
         Will update self.current_dice with a new random number on the dice
 
         """
-        self.current_dice = np.random.randint(1, 6 + 1)
+        self.current_dice = int(self.rng.integers(1, 7))
 
     def get_pieces(self, seen_from=None):
         """
@@ -86,7 +99,8 @@ class Game:
         Resets the game and the game history
 
         """
-        self.players = [Player(), Player(), Player(), Player()]
+        self.rng = np.random.default_rng(self.seed)
+        self.players = [Player(ruleset=self.ruleset) for _ in range(4)]
         self.hist = collections.defaultdict(list)
         self.round = 1
         self.current_player = 0
@@ -222,18 +236,13 @@ class Game:
 
         # Update the points
         self.points[self.current_player] = self.players[self.current_player].get_pieces().sum()
-        next_player = True
-        # In the first round the players has 3 attempts to get a piece out of home
-        # if self.round == 1 and \
-        #         all(p_piece == 0 for p_piece in self.players[self.current_player].get_pieces()) and \
-        #         self.current_start_attempts < 3:
-        #     self.current_start_attempts += 1
-        #     next_player = False
-        # else:
-        #     self.current_start_attempts = 0
-        # If it is not in the first round a dice on 6 will give an extra move
-        if self.round != 1 and self.current_dice == 6:
-            next_player = True
+        next_player, self.current_start_attempts = pass_turn(
+            self.ruleset,
+            self.round,
+            self.current_dice,
+            self.players[self.current_player].get_pieces(),
+            self.current_start_attempts,
+        )
 
         # Set the observation pending to false as the last given observation was handled
         self.observation_pending = False
@@ -295,7 +304,9 @@ class Game:
         :return piece_hist: List of sets of pieces [player 1, player 2, player 3, player 4]
         :rtype piece_hist: list of 4 lists with 4 int's
         """
-        all_piece_hists = self.hist["piece"]
+        all_piece_hists = self.hist["pieces"]
+        if not all_piece_hists:
+            return []
         piece_hist = [all_piece_hists[0]]
         for pieces in all_piece_hists[1:]:
             add_to_hist = False
@@ -336,8 +347,11 @@ class Game:
 
         """
         file_ext = file_name.split(".")[-1]
-        assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-        np.savez(file_name, **self.hist)
+        if file_ext != "npz":
+            raise ValueError(
+                "save_hist writes a numpy archive and the file name has to end in .npz"
+            )
+        np.savez(file_name, **{key: np.asarray(value, dtype=object) for key, value in self.hist.items()})
 
     def save_hist_video(self, video_out, fps=8, frame_size=None, fourcc=None):
         """

@@ -1,4 +1,9 @@
-from .player import Player
+# Derived from LUDOpy, Copyright (c) 2020 SimonLBS, MIT License.
+# The MIT notice is preserved in LICENSE.MIT next to this file.
+# AlphaLudo modifications are described in the repository README.
+# This notice does not relicense the file.
+
+from .player import Player, pass_turn, validate_ruleset
 from .visualizer_3dice import make_img_of_board, save_hist_video
 import numpy as np
 
@@ -8,40 +13,35 @@ class Game:
     The Game. This class is the only needed class for normal use
     """
 
-    def __init__(self, ghost_players=[], strategic_player=-1):
+    def __init__(self, ghost_players=None, strategic_player=-1, ruleset="classic", seed=None):
         """
-        Maked a game with 4 players
+        Three-dice game. One shared roll of three faces is dealt, highest
+        remaining face first, across successive turns.
 
-        :param ghost_players: Players there are not in the game
-        :type ghost_players: list of int
+        ruleset selects movement rules and is independent of the dice queue.
+        "classic" is the default. "legacy" reproduces the movement rules the
+        old notebooks were measured on. strategic_player is stored and is not
+        used by the engine.
         """
-        self.players = [Player(), Player(), Player(), Player()]
-        self.hist = []
-        self.round = 1
-        self.current_player = 0
-        self.first_winner_was = -1
-        self.current_dice = -1
-        self.dice_list = []
-        self.past_dice_list = []
-        self.observation_pending = False
-        self.current_move_pieces = []
-        self.current_enemys = []
-        self.current_start_attempts = 0
+        if ghost_players is None:
+            ghost_players = []
+        self.ghost_players = list(ghost_players)
+        self.strategic_player = strategic_player
+        self.ruleset = validate_ruleset(ruleset)
+        self.seed = seed
         self.enemys_order = {
             0: [1, 2, 3],
             1: [2, 3, 0],
             2: [3, 0, 1],
             3: [0, 1, 2]
         }
-        self.game_winners = []
-        self.points_list = []
-        self.ghost_players = ghost_players
+        self.reset()
 
     def __dice_generator(self):
         """
         Will update self.dice_list with a 3 new random numbers on the dice
         """
-        self.dice_list = [np.random.randint(1, 6 + 1),np.random.randint(1, 6 + 1), np.random.randint(1, 6 + 1)]
+        self.dice_list = [int(self.rng.integers(1, 7)) for _ in range(3)]
     
     def _dice_choose(self):
         """
@@ -90,7 +90,8 @@ class Game:
         Resets the game and the game history
 
         """
-        self.players = [Player(), Player(), Player(), Player()]
+        self.rng = np.random.default_rng(self.seed)
+        self.players = [Player(ruleset=self.ruleset) for _ in range(4)]
         self.hist = []
         self.round = 1
         self.current_player = 0
@@ -229,20 +230,13 @@ class Game:
         # Add the bord after the move to the history
         self.__add_to_hist()
 
-        next_player = True
-        """
-        # In the first round the players has 3 attempts to get a piece out of home
-        if self.round == 1 and \
-                all(p_piece == 0 for p_piece in self.players[self.current_player].get_pieces()) and \
-                self.current_start_attempts < 3:
-            self.current_start_attempts += 1
-            next_player = False
-        else:
-            self.current_start_attempts = 0
-        # If it is not in the first round a dice on 6 will give an extra move
-        if self.round != 1 and self.current_dice == 6:
-            next_player = False
-        """
+        next_player, self.current_start_attempts = pass_turn(
+            self.ruleset,
+            self.round,
+            self.current_dice,
+            self.players[self.current_player].get_pieces(),
+            self.current_start_attempts,
+        )
 
         # Set the observation pending to false as the last given observation was handled
         self.observation_pending = False
@@ -319,6 +313,8 @@ class Game:
         :return piece_hist: List of sets of pieces [player 1, player 2, player 3, player 4]
         :rtype piece_hist: list of 4 lists with 4 int's
         """
+        if not self.hist:
+            return []
         piece_hist = [self.hist[0][0]]
         for h in self.hist[1:]:
             pieces = h[0]
@@ -356,9 +352,11 @@ class Game:
 
         """
         file_ext = file_name.split(".")[-1]
-        assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-        print(self.hist[-1])
-        np.save(file_name, np.array(self.hist, dtype='object'))
+        if file_ext != "npy":
+            raise ValueError(
+                "Game3Dice.save_hist writes a numpy object array and the file name has to end in .npy"
+            )
+        np.save(file_name, np.array(self.hist, dtype=object))
 
     def save_hist_video(self, video_out, fps=8, frame_size=None, fourcc=None):
         """

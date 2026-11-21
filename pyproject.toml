@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alphaludo"
+version = "0.2.0"
+description = "Ludo engine and baselines. The engine derived from LUDOpy stays MIT; the rest of the repository stays GPL-3. See README. This file does not relicense either."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.22",
+    "opencv-python-headless>=4.5",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ludopy = ["*.png", "LICENSE.MIT"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
